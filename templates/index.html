@@ -1,0 +1,18 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Gate{% endblock %}
+{% block head %}
+{{ super() }}
+<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="apple-touch-icon" sizes="180x180" href="static/gate.png">
+{% endblock %}
+{% block content %}
+<div class="text-center vh-100">
+<h1>Gate status:<br>{{ status_text }}</h1><br>
+<form action="/" method="get">
+    <input type="hidden" value="{{ password }}" name="password">
+    <input type="submit" value="CLOSE" name="action" class="btn btn-lg"><br><br>
+    <input type="submit" value="OPEN" name="action" class="btn btn-lg">
+</form>
+</div>
+{% endblock %}
