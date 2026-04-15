@@ -1,0 +1,12 @@
+[Unit]
+Description=Gate
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/gate/
+TimeoutStartSec=0
+Restart=always
+ExecStart=/usr/local/bin/waitress-serve --host 0.0.0.0 --port 9130 gate:app
+
+[Install]
+WantedBy=multi-user.target
