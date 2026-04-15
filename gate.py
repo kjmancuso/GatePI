@@ -2,6 +2,7 @@ import atexit
 import logging
 import os
 import sys
+import time
 
 import flask
 import RPi.GPIO as GPIO
@@ -37,10 +38,10 @@ def load_password():
         with open(password_file) as fp:
             return fp.readline().rstrip()
     except FileNotFoundError:
-        log.error("Password file '%s' not found. Create it with your password.", password_file)
+        log.error(f"Password file '{password_file}' not found. Create it with your password.")
         sys.exit(1)
     except OSError as e:
-        log.error("Cannot read password file '%s': %s", password_file, e)
+        log.error(f"Cannot read password file '{password_file}': {e}")
         sys.exit(1)
 
 
@@ -56,7 +57,7 @@ def index():
         if password == password_read:
             flask.session['authenticated'] = True
         else:
-            log.warning("Failed auth attempt from %s", flask.request.remote_addr)
+            log.warning(f"Failed auth attempt from {flask.request.remote_addr}")
             flask.abort(403)
 
     if not flask.session.get('authenticated'):
@@ -78,14 +79,35 @@ def action():
     act = flask.request.form.get('action', '')
     if act == 'OPEN':
         GPIO.output(GATE, GPIO.HIGH)
-        log.info("Gate OPENED from %s", flask.request.remote_addr)
+        log.info(f"Gate OPENED from {flask.request.remote_addr}")
     elif act == 'CLOSE':
         GPIO.output(GATE, GPIO.LOW)
-        log.info("Gate CLOSED from %s", flask.request.remote_addr)
+        log.info(f"Gate CLOSED from {flask.request.remote_addr}")
     else:
         flask.abort(400)
 
     return flask.redirect(flask.url_for('index'))
+
+
+@app.route('/pulse', methods=['GET'])
+def pulse():
+    password = flask.request.args.get('password', '')
+    if password:
+        if password == password_read:
+            flask.session['authenticated'] = True
+        else:
+            log.warning(f"Failed auth attempt from {flask.request.remote_addr}")
+            flask.abort(403)
+
+    if not flask.session.get('authenticated'):
+        flask.abort(403)
+
+    GPIO.output(GATE, GPIO.HIGH)
+    time.sleep(0.5)
+    GPIO.output(GATE, GPIO.LOW)
+    log.info(f"Gate PULSED from {flask.request.remote_addr}")
+
+    return ('', 204)
 
 
 if __name__ == '__main__':
