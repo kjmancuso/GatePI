@@ -47,9 +47,20 @@
             font-size: 3rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.25rem;
             transition: color 0.2s ease;
         }
+
+        .status-desc {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #636366;
+            margin-bottom: 0;
+            transition: color 0.2s ease;
+        }
+
+        body.is-open  .status-desc { color: #c47800; }
+        body.is-closed .status-desc { color: #1e8a3c; }
 
         .status-dot {
             display: inline-block;
@@ -99,6 +110,9 @@
 
         .btn-open  { background: #ff9f0a; color: #000; }
         .btn-close { background: #30d158; color: #000; }
+
+        /* forms are layout-invisible so buttons remain direct flex children */
+        .buttons form { display: contents; }
     </style>
 </head>
 <body class="{{ 'is-open' if status_text == 'OPEN' else 'is-closed' }}">
@@ -108,10 +122,19 @@
     <div class="status">
         <span class="status-dot"></span>{{ status_text }}
     </div>
+    <p class="status-desc">
+        {{ "Gate is currently open" if status_text == 'OPEN' else "Gate is currently closed" }}
+    </p>
 
     <div class="buttons">
-        <a href="/?action=OPEN"  class="btn btn-open">Open</a>
-        <a href="/?action=CLOSE" class="btn btn-close">Close</a>
+        <form method="POST" action="/">
+            <input type="hidden" name="action" value="OPEN">
+            <button type="submit" class="btn btn-open">Open</button>
+        </form>
+        <form method="POST" action="/">
+            <input type="hidden" name="action" value="CLOSE">
+            <button type="submit" class="btn btn-close">Close</button>
+        </form>
     </div>
 
 </body>

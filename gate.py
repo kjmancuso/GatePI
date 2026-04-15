@@ -62,20 +62,30 @@ def index():
     if not flask.session.get('authenticated'):
         flask.abort(403)
 
-    action = flask.request.args.get('action', 'STATUS')
-    if action == 'OPEN':
-        GPIO.output(GATE, GPIO.HIGH)
-        log.info("Gate OPENED from %s", flask.request.remote_addr)
-    elif action == 'CLOSE':
-        GPIO.output(GATE, GPIO.LOW)
-        log.info("Gate CLOSED from %s", flask.request.remote_addr)
-    elif action != 'STATUS':
-        flask.abort(400)
-
     status = GPIO.input(GATE)
     status_text = "OPEN" if status else "CLOSED"
 
-    return flask.render_template('index.html', status_text=status_text)
+    response = flask.make_response(flask.render_template('index.html', status_text=status_text))
+    response.headers['Cache-Control'] = 'no-store'
+    return response
+
+
+@app.route('/', methods=['POST'])
+def action():
+    if not flask.session.get('authenticated'):
+        flask.abort(403)
+
+    act = flask.request.form.get('action', '')
+    if act == 'OPEN':
+        GPIO.output(GATE, GPIO.HIGH)
+        log.info("Gate OPENED from %s", flask.request.remote_addr)
+    elif act == 'CLOSE':
+        GPIO.output(GATE, GPIO.LOW)
+        log.info("Gate CLOSED from %s", flask.request.remote_addr)
+    else:
+        flask.abort(400)
+
+    return flask.redirect(flask.url_for('index'))
 
 
 if __name__ == '__main__':
